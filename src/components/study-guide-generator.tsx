@@ -1,23 +1,25 @@
 "use client"
 
+import { Textarea } from "@/components/ui/textarea"
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Loader2, BookOpen, FileText } from "lucide-react"
-import TopicInput from "./topic-input"
 import MediaPreferences from "./media-preferences"
 import StudyPlanAdjuster from "./study-plan-adjuster"
 import PracticeOptions from "./practice-options"
 import StudyGuideDisplay from "./study-guide-display"
+import TopicInput from "./topic-input" // Declare the TopicInput variable
+import TopicTextarea from "./topic-textarea"
 
 export default function StudyGuideGenerator() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [studyGuide, setStudyGuide] = useState<string | null>(null)
-  const [topics, setTopics] = useState([""])
+  const [topics, setTopics] = useState("")
   const [constraints, setConstraints] = useState("")
   const [strengths, setStrengths] = useState([""])
   const [weaknesses, setWeaknesses] = useState([""])
@@ -28,17 +30,20 @@ export default function StudyGuideGenerator() {
 
     // Simulate API call to generate study guide
     setTimeout(() => {
+      // Parse topics from text input (split by commas or new lines)
+      const topicsList = topics
+        .split(/[,\n]/)
+        .map((topic) => topic.trim())
+        .filter((topic) => topic.length > 0)
+
       const generatedGuide = `
-# Study Guide: ${topics.filter((t) => t).join(", ")}
+# Study Guide: ${topicsList.join(", ")}
 
 ## Overview
 This personalized study guide has been created based on your specific preferences and learning needs.
 
 ## Key Concepts
-${topics
-  .filter((t) => t)
-  .map((topic) => `- ${topic}: Definition and explanation of ${topic}`)
-  .join("\n")}
+${topicsList.map((topic) => `- ${topic}: Definition and explanation of ${topic}`).join("\n")}
 
 ## Strengths
 You've indicated strength in these areas:
@@ -55,7 +60,7 @@ ${weaknesses
   .join("\n")}
 
 ## Study Plan
-1. Begin with reviewing ${topics[0] || "basic concepts"}
+1. Begin with reviewing ${topicsList[0] || "basic concepts"}
 2. Practice with the provided exercises
 3. Review difficult concepts using the recommended resources
 4. Test your knowledge with practice problems
@@ -68,7 +73,7 @@ ${weaknesses
 
 ## Next Steps
 Adjust this study plan as needed and track your progress!
-      `
+  `
 
       setStudyGuide(generatedGuide)
       setIsGenerating(false)
@@ -96,12 +101,7 @@ Adjust this study plan as needed and track your progress!
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-purple-700">Topics & Concepts</h2>
-                  <TopicInput
-                    items={topics}
-                    setItems={setTopics}
-                    placeholder="Enter a topic or concept"
-                    label="Topics"
-                  />
+                  <TopicTextarea value={topics} onChange={setTopics} />
                 </div>
 
                 <Separator />
@@ -167,7 +167,7 @@ Adjust this study plan as needed and track your progress!
                   onClick={handleGenerateStudyGuide}
                   className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
                   size="lg"
-                  disabled={isGenerating || topics.filter((t) => t).length === 0}
+                  disabled={isGenerating || !topics.trim()}
                 >
                   {isGenerating ? (
                     <>

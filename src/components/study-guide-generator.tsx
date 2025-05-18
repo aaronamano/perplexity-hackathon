@@ -15,6 +15,7 @@ import PracticeOptions from "./practice-options"
 import StudyGuideDisplay from "./study-guide-display"
 import TopicInput from "./topic-input" // Declare the TopicInput variable
 import TopicTextarea from "./topic-textarea"
+import { toast } from "sonner"
 
 export default function StudyGuideGenerator() {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -29,56 +30,56 @@ export default function StudyGuideGenerator() {
     setIsGenerating(true)
 
     // Simulate API call to generate study guide
-    setTimeout(() => {
-      // Parse topics from text input (split by commas or new lines)
-      const topicsList = topics
-        .split(/[,\n]/)
-        .map((topic) => topic.trim())
-        .filter((topic) => topic.length > 0)
 
-      const generatedGuide = `
-# Study Guide: ${topicsList.join(", ")}
+    try {
+      const response = await fetch('/api/study-guide', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topics,
+          constraints,
+          strengths: strengths.filter(s => s.trim()),
+          weaknesses: weaknesses.filter(w => w.trim()),
+          mediaPreferences: {
+            videos: (document.getElementById('videos') as HTMLInputElement | null)?.checked || false,
+            flashcards: (document.getElementById('flashcards') as HTMLInputElement | null)?.checked || false,
+            diagrams: (document.getElementById('diagrams') as HTMLInputElement | null)?.checked || false,
+            readings: (document.getElementById('readings') as HTMLInputElement | null)?.checked || false,
+            summaries: (document.getElementById('summaries') as HTMLInputElement | null)?.checked || false,
+            externalResources: (document.getElementById('resources') as HTMLInputElement | null)?.checked || false,
+          },
+          studyPlan: {
+            duration: 'medium', // You can make this dynamic based on your select input
+            intensity: 'balanced', // You can make this dynamic based on your radio input
+            difficulty: 50, // You can make this dynamic based on your slider
+            learningStyle: 'visual', // You can make this dynamic based on your select input
+          },
+          practiceOptions: {
+            includePracticeProblems: (document.getElementById('practice-problems') as HTMLInputElement | null)?.checked || false,
+            includeMockExams: (document.getElementById('mock-exams') as HTMLInputElement | null)?.checked || false,
+            difficulty: 'mixed', // You can make this dynamic based on your select input
+            quantity: 50, // You can make this dynamic based on your slider
+          },
+        }),
+      });
 
-## Overview
-This personalized study guide has been created based on your specific preferences and learning needs.
+      if (!response.ok) {
+        throw new Error('Failed to generate study guide');
+      }
 
-## Key Concepts
-${topicsList.map((topic) => `- ${topic}: Definition and explanation of ${topic}`).join("\n")}
-
-## Strengths
-You've indicated strength in these areas:
-${strengths
-  .filter((s) => s)
-  .map((s) => `- ${s}`)
-  .join("\n")}
-
-## Areas for Improvement
-Focus more attention on:
-${weaknesses
-  .filter((w) => w)
-  .map((w) => `- ${w}`)
-  .join("\n")}
-
-## Study Plan
-1. Begin with reviewing ${topicsList[0] || "basic concepts"}
-2. Practice with the provided exercises
-3. Review difficult concepts using the recommended resources
-4. Test your knowledge with practice problems
-
-## Resources
-- Video tutorials on each topic
-- Interactive flashcards for key terms
-- Practice problems with solutions
-- Recommended reading materials
-
-## Next Steps
-Adjust this study plan as needed and track your progress!
-  `
-
-      setStudyGuide(generatedGuide)
-      setIsGenerating(false)
-      setActiveTab("result")
-    }, 2000)
+      const data = await response.json();
+      setStudyGuide(data.studyGuide);
+      setActiveTab('result');
+    } catch (error) {
+      console.error('Error generating study guide:', error);
+      toast.error('Failed to generate study guide', {
+        description: 'Please try again later',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   }
 
   return (

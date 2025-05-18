@@ -7,14 +7,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Download, Copy, Printer, BookOpen, ListChecks, FileText } from "lucide-react"
 import { toast } from "sonner"
 
+// Props interface for the StudyGuideDisplay component
 interface StudyGuideDisplayProps {
   studyGuide: string | null
   isGenerating: boolean
 }
 
+// Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
+  // State to track which tab/view is active
   const [activeView, setActiveView] = useState("full")
 
+  // Copies the study guide text to the clipboard and shows a toast notification
   const handleCopy = () => {
     if (studyGuide) {
       navigator.clipboard.writeText(studyGuide)
@@ -24,6 +28,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     }
   }
 
+  // Downloads the study guide as a markdown file and shows a toast notification
   const handleDownload = () => {
     if (studyGuide) {
       const blob = new Blob([studyGuide], { type: "text/markdown" })
@@ -42,6 +47,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     }
   }
 
+  // Opens a print dialog with the study guide content and shows a toast notification
   const handlePrint = () => {
     if (studyGuide) {
       const printWindow = window.open("", "_blank")
@@ -57,6 +63,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     }
   }
 
+  // If the study guide is being generated, show a loading card
   if (isGenerating) {
     return (
       <Card className="w-full">
@@ -71,6 +78,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     )
   }
 
+  // If there is no study guide yet, show an empty state card
   if (!studyGuide) {
     return (
       <Card className="w-full">
@@ -85,11 +93,14 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     )
   }
 
+  // Main UI when a study guide is available
   return (
     <div className="space-y-4">
+      {/* Header with title and action buttons */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Your Study Guide</h2>
         <div className="flex space-x-2">
+          {/* Copy button */}
           <Button
             variant="outline"
             size="sm"
@@ -99,6 +110,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
             <Copy className="h-4 w-4 mr-2" />
             Copy
           </Button>
+          {/* Download button */}
           <Button
             variant="outline"
             size="sm"
@@ -108,6 +120,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
             <Download className="h-4 w-4 mr-2" />
             Download
           </Button>
+          {/* Print button */}
           <Button
             variant="outline"
             size="sm"
@@ -120,54 +133,66 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
         </div>
       </div>
 
+      {/* Tabs for switching between different study guide views */}
       <Tabs value={activeView} onValueChange={setActiveView}>
         <TabsList className="grid w-full grid-cols-3 bg-purple-100">
+          {/* Full Guide tab */}
           <TabsTrigger value="full" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <BookOpen className="mr-2 h-4 w-4" />
             Full Guide
           </TabsTrigger>
+          {/* Flashcards tab */}
           <TabsTrigger value="flashcards" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <ListChecks className="mr-2 h-4 w-4" />
             Flashcards
           </TabsTrigger>
+          {/* Summary tab */}
           <TabsTrigger value="summary" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
             <FileText className="mr-2 h-4 w-4" />
             Summary
           </TabsTrigger>
         </TabsList>
 
+        {/* Full Guide content */}
         <TabsContent value="full">
           <Card>
             <CardContent className="p-6">
               <div className="prose max-w-none">
+                {/* Render each line of the study guide with basic markdown-like formatting */}
                 {studyGuide.split("\n").map((line, index) => {
                   if (line.startsWith("# ")) {
+                    // Render as main heading
                     return (
                       <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
                         {line.substring(2)}
                       </h1>
                     )
                   } else if (line.startsWith("## ")) {
+                    // Render as subheading
                     return (
                       <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
                         {line.substring(3)}
                       </h2>
                     )
                   } else if (line.startsWith("- ")) {
+                    // Render as list item
                     return (
                       <li key={index} className="ml-6 mb-1">
                         {line.substring(2)}
                       </li>
                     )
                   } else if (line.trim() === "") {
+                    // Render blank lines as line breaks
                     return <br key={index} />
                   } else if (/^\d+\./.test(line)) {
+                    // Render numbered list items
                     return (
                       <div key={index} className="ml-6 mb-1">
                         {line}
                       </div>
                     )
                   } else {
+                    // Render as paragraph
                     return (
                       <p key={index} className="mb-4">
                         {line}
@@ -180,10 +205,12 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
           </Card>
         </TabsContent>
 
+        {/* Flashcards content */}
         <TabsContent value="flashcards">
           <Card>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 gap-4">
+                {/* Example flashcard: Main focus */}
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
                   <p className="font-medium">Front: What is the main focus of this study guide?</p>
                   <p className="mt-2 text-muted-foreground">
@@ -199,6 +226,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   </p>
                 </div>
 
+                {/* Example flashcard: Strengths */}
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
                   <p className="font-medium">Front: What are your strengths in this subject?</p>
                   <p className="mt-2 text-muted-foreground">
@@ -215,6 +243,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   </p>
                 </div>
 
+                {/* Example flashcard: Areas for improvement */}
                 <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
                   <p className="font-medium">Front: What areas need improvement?</p>
                   <p className="mt-2 text-muted-foreground">
@@ -231,6 +260,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   </p>
                 </div>
 
+                {/* Note about more flashcards */}
                 <p className="text-sm text-muted-foreground text-center mt-2">
                   More flashcards would be generated based on your specific topics
                 </p>
@@ -239,6 +269,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
           </Card>
         </TabsContent>
 
+        {/* Summary content */}
         <TabsContent value="summary">
           <Card>
             <CardContent className="p-6">
@@ -246,6 +277,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                 <h2 className="text-xl font-semibold mb-4">Study Guide Summary</h2>
                 <p>This personalized study guide covers the following topics:</p>
                 <ul className="my-4">
+                  {/* List key concepts if available */}
                   {studyGuide.includes("Key Concepts") ? (
                     studyGuide
                       .split("Key Concepts")[1]
@@ -262,9 +294,11 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                   improvement. It includes a customized study plan with resources tailored to your learning preferences.
                 </p>
 
+                {/* Key recommendations section */}
                 <div className="bg-muted p-4 rounded-lg mt-4">
                   <h3 className="text-lg font-medium mb-2">Key Recommendations</h3>
                   <ol className="list-decimal ml-5 space-y-1">
+                    {/* List study plan steps if available */}
                     {studyGuide.includes("Study Plan") ? (
                       studyGuide
                         .split("Study Plan")[1]

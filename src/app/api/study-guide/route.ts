@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+// Define the expected shape of the request body for type safety
 export interface StudyGuideRequest {
   topics: string;
   constraints: string;
@@ -27,13 +28,16 @@ export interface StudyGuideRequest {
   };
 }
 
+// Retrieve the Perplexity API key from environment variables
 const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 
+// Define the POST handler for the API route
 export async function POST(request: Request) {
   try {
+    // Parse the incoming request body as a StudyGuideRequest object
     const body: StudyGuideRequest = await request.json();
 
-    // Construct the prompt for Perplexity API
+    // Construct a prompt string for the Perplexity API using user input
     const prompt = `Generate a detailed study guide for the following topics:
 ${body.topics}
 
@@ -46,7 +50,7 @@ Consider these parameters:
 
 Format the response as a markdown document with sections for Overview, Key Concepts, Strengths, Areas for Improvement, and Study Plan.`;
 
-    // Call Perplexity API
+    // Send a POST request to the Perplexity API with the constructed prompt
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -68,15 +72,20 @@ Format the response as a markdown document with sections for Overview, Key Conce
       })
     });
 
+    // If the API call fails, throw an error to be caught below
     if (!response.ok) {
       throw new Error('Perplexity API request failed');
     }
 
+    // Parse the response from the Perplexity API
     const data = await response.json();
+    // Extract the generated study guide content from the API response
     const studyGuide = data.choices[0].message.content;
 
+    // Return the study guide as a JSON response with status 200 (OK)
     return NextResponse.json({ studyGuide }, { status: 200 });
   } catch (error) {
+    // Log any errors and return a 500 (Internal Server Error) response
     console.error('Error generating study guide:', error);
     return NextResponse.json(
       { error: 'Failed to generate study guide' },

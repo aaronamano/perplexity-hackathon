@@ -27,35 +27,53 @@ export interface StudyGuideRequest {
   };
 }
 
+const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
+
 export async function POST(request: Request) {
   try {
     const body: StudyGuideRequest = await request.json();
 
-    // Here you would typically integrate with an AI service or your backend logic
-    // For now, we'll return a mock response
-    const studyGuide = `
-# Study Guide: ${body.topics}
+    // Construct the prompt for Perplexity API
+    const prompt = `Generate a detailed study guide for the following topics:
+${body.topics}
 
-## Overview
-This personalized study guide has been created based on your specific preferences and learning needs.
+Consider these parameters:
+- Strengths: ${body.strengths.join(', ')}
+- Areas for improvement: ${body.weaknesses.join(', ')}
+- Learning style: ${body.studyPlan.learningStyle}
+- Study duration: ${body.studyPlan.duration}
+- Difficulty level: ${body.studyPlan.difficulty}
 
-## Key Concepts
-${body.topics.split(/[,\n]/)
-  .map((topic) => `- ${topic.trim()}: Definition and explanation`)
-  .join('\n')}
+Format the response as a markdown document with sections for Overview, Key Concepts, Strengths, Areas for Improvement, and Study Plan.`;
 
-## Strengths
-${body.strengths.map((s) => `- ${s}`).join('\n')}
+    // Call Perplexity API
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "sonar-deep-research",
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional study guide creator. Generate detailed, well-structured study guides in markdown format."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      })
+    });
 
-## Areas for Improvement
-${body.weaknesses.map((w) => `- ${w}`).join('\n')}
+    if (!response.ok) {
+      throw new Error('Perplexity API request failed');
+    }
 
-## Study Plan
-1. Begin with foundational concepts
-2. Progress through intermediate topics
-3. Practice with exercises
-4. Review and reinforce learning
-`;
+    const data = await response.json();
+    const studyGuide = data.choices[0].message.content;
 
     return NextResponse.json({ studyGuide }, { status: 200 });
   } catch (error) {

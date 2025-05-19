@@ -41,14 +41,28 @@ export async function POST(request: Request) {
     const prompt = `Generate a detailed study guide for the following topics:
 ${body.topics}
 
-Consider these parameters:
+Additional Context:
+${body.constraints}
+
+Parameters:
 - Strengths: ${body.strengths.join(', ')}
 - Areas for improvement: ${body.weaknesses.join(', ')}
-- Learning style: ${body.studyPlan.learningStyle}
-- Study duration: ${body.studyPlan.duration}
-- Difficulty level: ${body.studyPlan.difficulty}
+- Study Duration: ${body.studyPlan.duration}
+- Study Intensity: ${body.studyPlan.intensity}
+- Difficulty Level: ${body.studyPlan.difficulty}/10
+- Learning Style: ${body.studyPlan.learningStyle}
 
-Format the response as a markdown document with sections for Overview, Key Concepts, Strengths, Areas for Improvement, and Study Plan.`;
+Preferred Learning Materials:
+${Object.entries(body.mediaPreferences)
+  .filter(([value]) => value)
+  .map(([key]) => `- ${key.charAt(0).toUpperCase() + key.slice(1)}`)
+  .join('\n')}
+
+Practice Components:
+${body.practiceOptions.includePracticeProblems ? `- Include ${body.practiceOptions.quantity} practice problems at ${body.practiceOptions.difficulty} difficulty` : ''}
+${body.practiceOptions.includeMockExams ? `- Include mock exams at ${body.practiceOptions.difficulty} difficulty` : ''}
+
+Format the response as a markdown document with sections for Overview, Key Concepts, Learning Materials, Practice Section, and Detailed Study Plan.`;
 
     // Send a POST request to the Perplexity API with the constructed prompt
     const response = await fetch('https://api.perplexity.ai/chat/completions', {

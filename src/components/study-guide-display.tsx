@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Download, Copy, Printer, BookOpen, ListChecks, FileText } from "lucide-react"
+import { Loader2, Download, Copy, BookOpen, ListChecks, FileText } from "lucide-react"
 import { toast } from "sonner"
 
 // Props interface for the StudyGuideDisplay component
@@ -47,22 +47,6 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     }
   }
 
-  // Opens a print dialog with the study guide content and shows a toast notification
-  const handlePrint = () => {
-    if (studyGuide) {
-      const printWindow = window.open("", "_blank")
-      if (printWindow) {
-        // ...existing print code...
-        printWindow.document.close()
-        printWindow.print()
-      }
-
-      toast.success("Print prepared", {
-        description: "Your study guide has been prepared for printing"
-      })
-    }
-  }
-
   // If the study guide is being generated, show a loading card
   if (isGenerating) {
     return (
@@ -93,6 +77,47 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
     )
   }
 
+  // Function to process and render links in text (moved to top level for reuse)
+  const renderTextWithLinks = (text: string) => {
+    // Match markdown links [text](url)
+    const parts = text.split(/(\[.*?\]\(.*?\))/g);
+    return parts.map((part, i) => {
+      const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
+      if (linkMatch) {
+        return (
+          <a
+            key={i}
+            href={linkMatch[2]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-purple-600 hover:text-purple-800 underline"
+          >
+            {linkMatch[1]}
+          </a>
+        );
+      }
+      // Also handle plain URLs in text
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const textParts = part.split(urlRegex);
+      return textParts.map((textPart, j) => {
+        if (textPart.match(urlRegex)) {
+          return (
+            <a
+              key={`${i}-${j}`}
+              href={textPart}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-purple-600 hover:text-purple-800 underline"
+            >
+              {textPart}
+            </a>
+          );
+        }
+        return textPart;
+      });
+    });
+  };
+
   // Main UI when a study guide is available
   return (
     <div className="space-y-4">
@@ -120,38 +145,25 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
             <Download className="h-4 w-4 mr-2" />
             Download
           </Button>
-          {/* Print button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrint}
-            className="border-purple-200 hover:bg-purple-50 hover:text-purple-700"
-          >
-            <Printer className="h-4 w-4 mr-2" />
-            Print
-          </Button>
         </div>
       </div>
 
       {/* Tabs for switching between different study guide views */}
       <Tabs value={activeView} onValueChange={setActiveView}>
-        <TabsList className="grid w-full grid-cols-3 bg-purple-100">
-          {/* Full Guide tab */}
-          <TabsTrigger value="full" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <BookOpen className="mr-2 h-4 w-4" />
-            Full Guide
-          </TabsTrigger>
-          {/* Flashcards tab */}
-          <TabsTrigger value="flashcards" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <ListChecks className="mr-2 h-4 w-4" />
-            Flashcards
-          </TabsTrigger>
-          {/* Summary tab */}
-          <TabsTrigger value="summary" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
-            <FileText className="mr-2 h-4 w-4" />
-            Summary
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex justify-center">
+          <TabsList className="grid grid-cols-2 w-80 bg-purple-100">
+            {/* Full Guide tab */}
+            <TabsTrigger value="full" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+              <BookOpen className="mr-2 h-4 w-4" />
+              Full Guide
+            </TabsTrigger>
+            {/* Summary tab */}
+            <TabsTrigger value="summary" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
+              <FileText className="mr-2 h-4 w-4" />
+              Summary
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Full Guide content */}
         <TabsContent value="full">
@@ -160,110 +172,81 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
               <div className="prose max-w-none">
                 {/* Render each line of the study guide with basic markdown-like formatting */}
                 {studyGuide.split("\n").map((line, index) => {
+                  // Function to process and render links in text
+                  const renderTextWithLinks = (text: string) => {
+                    // Match markdown links [text](url)
+                    const parts = text.split(/(\[.*?\]\(.*?\))/g);
+                    return parts.map((part, i) => {
+                      const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
+                      if (linkMatch) {
+                        return (
+                          <a
+                            key={i}
+                            href={linkMatch[2]}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-purple-800 underline"
+                          >
+                            {linkMatch[1]}
+                          </a>
+                        );
+                      }
+                      // Also handle plain URLs in text
+                      const urlRegex = /(https?:\/\/[^\s]+)/g;
+                      const textParts = part.split(urlRegex);
+                      return textParts.map((textPart, j) => {
+                        if (textPart.match(urlRegex)) {
+                          return (
+                            <a
+                              key={`${i}-${j}`}
+                              href={textPart}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-purple-600 hover:text-purple-800 underline"
+                            >
+                              {textPart}
+                            </a>
+                          );
+                        }
+                        return textPart;
+                      });
+                    });
+                  };
+
                   if (line.startsWith("# ")) {
-                    // Render as main heading
                     return (
                       <h1 key={index} className="text-2xl font-bold mt-0 mb-4">
-                        {line.substring(2)}
+                        {renderTextWithLinks(line.substring(2))}
                       </h1>
                     )
                   } else if (line.startsWith("## ")) {
-                    // Render as subheading
                     return (
                       <h2 key={index} className="text-xl font-semibold mt-6 mb-3">
-                        {line.substring(3)}
+                        {renderTextWithLinks(line.substring(3))}
                       </h2>
                     )
                   } else if (line.startsWith("- ")) {
-                    // Render as list item
                     return (
                       <li key={index} className="ml-6 mb-1">
-                        {line.substring(2)}
+                        {renderTextWithLinks(line.substring(2))}
                       </li>
                     )
                   } else if (line.trim() === "") {
-                    // Render blank lines as line breaks
                     return <br key={index} />
                   } else if (/^\d+\./.test(line)) {
-                    // Render numbered list items
                     return (
                       <div key={index} className="ml-6 mb-1">
-                        {line}
+                        {renderTextWithLinks(line)}
                       </div>
                     )
                   } else {
-                    // Render as paragraph
                     return (
                       <p key={index} className="mb-4">
-                        {line}
+                        {renderTextWithLinks(line)}
                       </p>
                     )
                   }
                 })}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Flashcards content */}
-        <TabsContent value="flashcards">
-          <Card>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-1 gap-4">
-                {/* Example flashcard: Main focus */}
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <p className="font-medium">Front: What is the main focus of this study guide?</p>
-                  <p className="mt-2 text-muted-foreground">
-                    Back: The main topics include{" "}
-                    {studyGuide.includes("Key Concepts")
-                      ? studyGuide
-                          .split("Key Concepts")[1]
-                          .split("\n")
-                          .filter((line) => line.startsWith("- "))
-                          .map((line) => line.substring(2).split(":")[0])
-                          .join(", ")
-                      : "various concepts"}
-                  </p>
-                </div>
-
-                {/* Example flashcard: Strengths */}
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <p className="font-medium">Front: What are your strengths in this subject?</p>
-                  <p className="mt-2 text-muted-foreground">
-                    Back:{" "}
-                    {studyGuide.includes("Strengths")
-                      ? studyGuide
-                          .split("Strengths")[1]
-                          .split("Areas for Improvement")[0]
-                          .split("\n")
-                          .filter((line) => line.startsWith("- "))
-                          .map((line) => line.substring(2))
-                          .join(", ")
-                      : "Various areas as indicated in your input"}
-                  </p>
-                </div>
-
-                {/* Example flashcard: Areas for improvement */}
-                <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                  <p className="font-medium">Front: What areas need improvement?</p>
-                  <p className="mt-2 text-muted-foreground">
-                    Back:{" "}
-                    {studyGuide.includes("Areas for Improvement")
-                      ? studyGuide
-                          .split("Areas for Improvement")[1]
-                          .split("Study Plan")[0]
-                          .split("\n")
-                          .filter((line) => line.startsWith("- "))
-                          .map((line) => line.substring(2))
-                          .join(", ")
-                      : "Various areas as indicated in your input"}
-                  </p>
-                </div>
-
-                {/* Note about more flashcards */}
-                <p className="text-sm text-muted-foreground text-center mt-2">
-                  More flashcards would be generated based on your specific topics
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -277,35 +260,39 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                 <h2 className="text-xl font-semibold mb-4">Study Guide Summary</h2>
                 <p>This personalized study guide covers the following topics:</p>
                 <ul className="my-4">
-                  {/* List key concepts if available */}
                   {studyGuide.includes("Key Concepts") ? (
                     studyGuide
                       .split("Key Concepts")[1]
                       .split("\n")
                       .filter((line) => line.startsWith("- "))
-                      .map((line, index) => <li key={index}>{line.substring(2)}</li>)
+                      .map((line, index) => (
+                        <li key={index}>{renderTextWithLinks(line.substring(2))}</li>
+                      ))
                   ) : (
                     <li>Various topics as specified in your input</li>
                   )}
                 </ul>
 
                 <p className="mb-4">
-                  The guide is structured to help you leverage your strengths while addressing areas that need
-                  improvement. It includes a customized study plan with resources tailored to your learning preferences.
+                  {renderTextWithLinks(
+                    "The guide is structured to help you leverage your strengths while addressing areas that need improvement. It includes a customized study plan with resources tailored to your learning preferences."
+                  )}
                 </p>
 
-                {/* Key recommendations section */}
                 <div className="bg-muted p-4 rounded-lg mt-4">
                   <h3 className="text-lg font-medium mb-2">Key Recommendations</h3>
                   <ol className="list-decimal ml-5 space-y-1">
-                    {/* List study plan steps if available */}
                     {studyGuide.includes("Study Plan") ? (
                       studyGuide
                         .split("Study Plan")[1]
                         .split("Resources")[0]
                         .split("\n")
                         .filter((line) => /^\d+\./.test(line))
-                        .map((line, index) => <li key={index}>{line.substring(line.indexOf(".") + 1).trim()}</li>)
+                        .map((line, index) => (
+                          <li key={index}>
+                            {renderTextWithLinks(line.substring(line.indexOf(".") + 1).trim())}
+                          </li>
+                        ))
                     ) : (
                       <>
                         <li>Begin with reviewing basic concepts</li>

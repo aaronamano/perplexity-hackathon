@@ -54,7 +54,7 @@ Parameters:
 
 Preferred Learning Materials:
 ${Object.entries(body.mediaPreferences)
-  .filter(([value]) => value)
+  .filter(([,value]) => value)
   .map(([key]) => `- ${key.charAt(0).toUpperCase() + key.slice(1)}`)
   .join('\n')}
 
@@ -62,7 +62,15 @@ Practice Components:
 ${body.practiceOptions.includePracticeProblems ? `- Include ${body.practiceOptions.quantity} practice problems at ${body.practiceOptions.difficulty} difficulty` : ''}
 ${body.practiceOptions.includeMockExams ? `- Include mock exams at ${body.practiceOptions.difficulty} difficulty` : ''}
 
-Format the response as a markdown document with sections for Overview, Key Concepts, Learning Materials, Practice Section, and Detailed Study Plan.`;
+Requirements for resources:
+- Include relevant hyperlinks using markdown format [text](url)
+- For each section, provide at least 2-3 high-quality external resources
+- Prioritize official documentation and reputable educational platforms
+- If suggesting videos, include direct links to specific tutorials
+- For practice problems, link to interactive coding platforms when applicable
+- Include links to relevant documentation, guides, and reference materials
+
+Format the response as a markdown document with sections for Overview, Key Concepts, Learning Materials, Practice Section, and Detailed Study Plan. Each section should include relevant hyperlinks to resources.`;
 
     // Send a POST request to the Perplexity API with the constructed prompt
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -76,7 +84,7 @@ Format the response as a markdown document with sections for Overview, Key Conce
         messages: [
           {
             role: "system",
-            content: "You are a professional study guide creator. Generate detailed, well-structured study guides in markdown format."
+            content: "You are a professional study guide creator. Generate detailed, well-structured study guides in markdown format. Always include relevant hyperlinks to high-quality resources, official documentation, tutorials, and practice materials. Use markdown link format [text](url) for all references."
           },
           {
             role: "user",

@@ -12,12 +12,9 @@ export interface StudyGuideRequest {
     diagrams: boolean;
     readings: boolean;
     summaries: boolean;
-    externalResources: boolean;
   };
   studyPlan: {
-    duration: string;
     intensity: string;
-    difficulty: number;
     learningStyle: string;
   };
   practiceOptions: {
@@ -47,9 +44,7 @@ ${body.constraints}
 Parameters:
 - Strengths: ${body.strengths.join(', ')}
 - Areas for improvement: ${body.weaknesses.join(', ')}
-- Study Duration: ${body.studyPlan.duration}
 - Study Intensity: ${body.studyPlan.intensity}
-- Difficulty Level: ${body.studyPlan.difficulty}/10
 - Learning Style: ${body.studyPlan.learningStyle}
 
 Preferred Learning Materials:
@@ -59,8 +54,10 @@ ${Object.entries(body.mediaPreferences)
   .join('\n')}
 
 Practice Components:
-${body.practiceOptions.includePracticeProblems ? `- Include ${body.practiceOptions.quantity} practice problems at ${body.practiceOptions.difficulty} difficulty` : ''}
-${body.practiceOptions.includeMockExams ? `- Include mock exams at ${body.practiceOptions.difficulty} difficulty` : ''}
+${body.practiceOptions.includePracticeProblems ? 
+  `- Include ${body.practiceOptions.quantity} practice problems at ${body.practiceOptions.difficulty} difficulty level` : ''}
+${body.practiceOptions.includeMockExams ? 
+  `- Include a mock exam with questions at ${body.practiceOptions.difficulty} difficulty level` : ''}
 
 Requirements for resources:
 - Include relevant hyperlinks using markdown format [text](url)
@@ -70,7 +67,28 @@ Requirements for resources:
 - For practice problems, link to interactive coding platforms when applicable
 - Include links to relevant documentation, guides, and reference materials
 
-Format the response as a markdown document with sections for Overview, Key Concepts, Learning Materials, Practice Section, and Detailed Study Plan. Each section should include relevant hyperlinks to resources.`;
+Format the response as a markdown document with the following sections:
+
+# Study Guide
+[Main guide content]
+
+# Practice Problems
+${body.practiceOptions.includePracticeProblems ? `
+Generate ${body.practiceOptions.quantity} practice problems at ${body.practiceOptions.difficulty} difficulty level.
+Format each problem as:
+Q1. [Problem text]
+A1. [Answer/Solution]
+` : ''}
+
+# Mock Exam
+${body.practiceOptions.includeMockExams ? `
+Generate a mock exam at ${body.practiceOptions.difficulty} difficulty level with:
+- Clear question numbering (Q1, Q2, etc.)
+- A mix of question types
+- Solutions provided separately
+` : ''}
+
+Each section should be clearly marked with the headers above.`;
 
     // Send a POST request to the Perplexity API with the constructed prompt
     const response = await fetch('https://api.perplexity.ai/chat/completions', {

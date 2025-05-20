@@ -17,6 +17,18 @@ import TopicTextarea from "./topic-textarea" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 
 export default function StudyGuideGenerator() {
+  // Add new state variables
+  const [intensity, setIntensity] = useState("balanced")
+  const [learningStyle, setLearningStyle] = useState("visual")
+
+  // Add new state variables for practice options
+  const [practiceOptions, setPracticeOptions] = useState({
+    includePracticeProblems: true,
+    includeMockExams: false,
+    difficulty: "mixed",
+    quantity: 50,
+  });
+
   // State variables for form fields and UI state
   const [isGenerating, setIsGenerating] = useState(false) // Loading state
   const [studyGuide, setStudyGuide] = useState<string | null>(null) // Generated guide
@@ -48,22 +60,19 @@ export default function StudyGuideGenerator() {
             flashcards: (document.getElementById('flashcards') as HTMLInputElement | null)?.checked || false,
             diagrams: (document.getElementById('diagrams') as HTMLInputElement | null)?.checked || false,
             readings: (document.getElementById('readings') as HTMLInputElement | null)?.checked || false,
-            summaries: (document.getElementById('summaries') as HTMLInputElement | null)?.checked || false,
-            externalResources: (document.getElementById('resources') as HTMLInputElement | null)?.checked || false,
+            summaries: (document.getElementById('summaries') as HTMLInputElement | null)?.checked || false
           },
-          // Hardcoded study plan options (could be dynamic)
+          // Updated study plan options
           studyPlan: {
-            duration: 'medium',
-            intensity: 'balanced',
-            difficulty: 50,
-            learningStyle: 'visual',
+            intensity,
+            learningStyle,
           },
-          // Hardcoded practice options (could be dynamic)
+          // Updated practice options
           practiceOptions: {
-            includePracticeProblems: (document.getElementById('practice-problems') as HTMLInputElement | null)?.checked || false,
-            includeMockExams: (document.getElementById('mock-exams') as HTMLInputElement | null)?.checked || false,
-            difficulty: 'mixed',
-            quantity: 50,
+            includePracticeProblems: practiceOptions.includePracticeProblems,
+            includeMockExams: practiceOptions.includeMockExams,
+            difficulty: practiceOptions.difficulty,
+            quantity: practiceOptions.quantity,
           },
         }),
       });
@@ -168,7 +177,12 @@ export default function StudyGuideGenerator() {
                 {/* Study plan preferences (duration, intensity, etc.) */}
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-purple-700">Study Plan Preferences</h2>
-                  <StudyPlanAdjuster />
+                  <StudyPlanAdjuster
+                    intensity={intensity}
+                    learningStyle={learningStyle}
+                    onIntensityChange={setIntensity}
+                    onLearningStyleChange={setLearningStyle}
+                  />
                 </div>
 
                 <Separator />
@@ -176,7 +190,20 @@ export default function StudyGuideGenerator() {
                 {/* Practice materials options */}
                 <div>
                   <h2 className="text-xl font-semibold mb-4 text-purple-700">Practice Materials</h2>
-                  <PracticeOptions />
+                  <PracticeOptions
+                    includePracticeProblems={practiceOptions.includePracticeProblems}
+                    includeMockExams={practiceOptions.includeMockExams}
+                    difficulty={practiceOptions.difficulty}
+                    quantity={practiceOptions.quantity}
+                    onPracticeProblemsChange={(checked) => 
+                      setPracticeOptions(prev => ({ ...prev, includePracticeProblems: checked }))}
+                    onMockExamsChange={(checked) => 
+                      setPracticeOptions(prev => ({ ...prev, includeMockExams: checked }))}
+                    onDifficultyChange={(value) => 
+                      setPracticeOptions(prev => ({ ...prev, difficulty: value }))}
+                    onQuantityChange={(value) => 
+                      setPracticeOptions(prev => ({ ...prev, quantity: value }))}
+                  />
                 </div>
 
                 {/* Generate button */}

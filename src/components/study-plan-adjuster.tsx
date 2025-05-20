@@ -1,6 +1,5 @@
 "use client"
 
-import { Slider } from "@/components/ui/slider"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -41,15 +40,21 @@ export default function StudyPlanAdjuster() {
       </div>
 
       <div className="space-y-2">
-        <div className="flex justify-between">
-          <Label htmlFor="difficulty">Content Difficulty</Label>
-          <span className="text-sm text-muted-foreground">Intermediate</span>
-        </div>
-        <Slider id="difficulty" defaultValue={[50]} max={100} step={1} className="text-purple-600" />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Beginner</span>
-          <span>Advanced</span>
-        </div>
+        <Label>Difficulty</Label>
+        <RadioGroup defaultValue="balanced" className="flex space-x-2">
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="light" id="light" className="border-purple-300 text-purple-600" />
+            <Label htmlFor="light">Easy</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="balanced" id="balanced" className="border-purple-300 text-purple-600" />
+            <Label htmlFor="balanced">Medium</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="intensive" id="intensive" className="border-purple-300 text-purple-600" />
+            <Label htmlFor="intensive">Hard</Label>
+          </div>
+        </RadioGroup>
       </div>
 
       <div className="space-y-2">

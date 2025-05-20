@@ -3,8 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { FileQuestion, FileCheck, Clock } from "lucide-react"
+import { FileQuestion, FileCheck } from "lucide-react"
 
 export default function PracticeOptions() {
   return (
@@ -58,16 +57,17 @@ export default function PracticeOptions() {
       <div className="space-y-2">
         <div className="flex justify-between">
           <Label htmlFor="problem-quantity" className="flex items-center">
-            <Clock className="mr-2 h-4 w-4" />
             Problem Quantity
           </Label>
-          <span className="text-sm text-muted-foreground">Medium</span>
         </div>
-        <Slider id="problem-quantity" defaultValue={[50]} max={100} step={1} className="text-purple-600" />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Few</span>
-          <span>Many</span>
-        </div>
+        <input
+          id="problem-quantity"
+          type="number"
+          min={1}
+          max={100}
+          defaultValue={50}
+          className="w-full border border-purple-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
       </div>
     </div>
   )

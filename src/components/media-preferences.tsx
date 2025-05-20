@@ -2,8 +2,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { Slider } from "@/components/ui/slider"
-import { Video, BookText, FileText, ImageIcon, ListChecks, LinkIcon } from "lucide-react"
+import { Video, BookText, FileText, ImageIcon, ListChecks } from "lucide-react"
 
 export default function MediaPreferences() {
   return (
@@ -81,33 +80,8 @@ export default function MediaPreferences() {
             <p className="text-sm text-muted-foreground">Include concept summaries</p>
           </div>
         </div>
-
-        <div className="flex items-start space-x-3 space-y-0">
-          <Checkbox
-            id="resources"
-            className="border-purple-300 data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
-          />
-          <div className="space-y-1 leading-none">
-            <Label htmlFor="resources" className="flex items-center">
-              <LinkIcon className="mr-2 h-4 w-4" />
-              External Resources
-            </Label>
-            <p className="text-sm text-muted-foreground">Include links to external resources</p>
-          </div>
-        </div>
       </div>
 
-      <div className="space-y-2 pt-2">
-        <div className="flex justify-between">
-          <Label htmlFor="text-density">Text Density</Label>
-          <span className="text-sm text-muted-foreground">Balanced</span>
-        </div>
-        <Slider id="text-density" defaultValue={[50]} max={100} step={1} className="text-purple-600" />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Concise</span>
-          <span>Detailed</span>
-        </div>
-      </div>
     </div>
   )
 }

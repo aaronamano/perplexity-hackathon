@@ -14,6 +14,24 @@ interface StudyGuideDisplayProps {
   isGenerating: boolean
 }
 
+// Update the extractSection helper function
+const extractSection = (content: string, sectionName: string) => {
+  if (!content) return '';
+  
+  const sections = content.split(/^# /m);
+  const section = sections.find(s => s.startsWith(sectionName));
+  
+  if (!section) return '';
+
+  // Get content up to the next section or end of content
+  const sectionContent = section
+    .split(/^# /m)[0]
+    .replace(sectionName, '')
+    .trim();
+    
+  return sectionContent;
+};
+
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGuideDisplayProps) {
   // State to track which tab/view is active
@@ -257,34 +275,32 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                 <h2 className="text-xl font-semibold mb-4">Practice Problems</h2>
                 {studyGuide ? (
                   <div className="space-y-6">
-                    {studyGuide
-                      .split(/# Practice Problems|# Mock Exam/)
-                      .filter(section => section.includes("Q") && section.includes("A"))
-                      .map(section => 
-                        section.split("\n").map((line, index) => {
-                          if (line.trim().startsWith("Q")) {
-                            const questionNum = line.match(/Q(\d+)/)?.[1];
-                            const answer = section
-                              .split("\n")
-                              .find(l => l.trim().startsWith(`A${questionNum}`));
+                    {extractSection(studyGuide, 'Practice Problems')
+                      .split('\n')
+                      .filter(line => line.trim())
+                      .map((line, index) => {
+                        if (line.trim().startsWith('Q')) {
+                          const questionNum = line.match(/Q(\d+)/)?.[1];
+                          const answer = extractSection(studyGuide, 'Practice Problems')
+                            .split('\n')
+                            .find(l => l.trim().startsWith(`A${questionNum}`));
 
-                            return (
-                              <div key={index} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                                <p className="font-medium mb-2">{renderTextWithLinks(line)}</p>
-                                <details className="mt-2">
-                                  <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                                    Show Solution
-                                  </summary>
-                                  <p className="mt-2 text-muted-foreground">
-                                    {answer && renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
-                                  </p>
-                                </details>
-                              </div>
-                            );
-                          }
-                          return null;
-                        })
-                      )}
+                          return (
+                            <div key={index} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
+                              <p className="font-medium mb-2">{renderTextWithLinks(line)}</p>
+                              <details className="mt-2">
+                                <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
+                                  Show Solution
+                                </summary>
+                                <p className="mt-2 text-muted-foreground">
+                                  {answer && renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
+                                </p>
+                              </details>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
                   </div>
                 ) : (
                   <p className="text-muted-foreground">No practice problems available in this study guide.</p>
@@ -324,14 +340,14 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                       </ul>
                     </div>
                     <div className="space-y-6">
-                      {studyGuide
-                        .split(/# Mock Exam/)[1]?.split("\n")
+                      {extractSection(studyGuide, 'Mock Exam')
+                        .split('\n')
+                        .filter(line => line.trim())
                         .map((line, index) => {
-                          if (line.trim().startsWith("Q")) {
+                          if (line.trim().startsWith('Q')) {
                             const questionNum = line.match(/Q(\d+)/)?.[1];
-                            const answer = studyGuide
-                              .split(/# Mock Exam/)[1]
-                              .split("\n")
+                            const answer = extractSection(studyGuide, 'Mock Exam')
+                              .split('\n')
                               .find(l => l.trim().startsWith(`A${questionNum}`));
 
                             return (

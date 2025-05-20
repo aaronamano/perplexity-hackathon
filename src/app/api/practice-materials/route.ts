@@ -19,34 +19,32 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { topics, strengths = [], weaknesses = [], practiceOptions } = body;
 
-    const prompt = `Generate targeted ${practiceOptions.includePracticeProblems ? 'practice problems' : ''} 
-${practiceOptions.includeMockExams ? 'and a mock exam' : ''} for the following topics:
+    const prompt = `Generate:
+${practiceOptions.includePracticeProblems ? '# Practice Problems' : ''}
+${practiceOptions.includePracticeProblems ? `
+Generate ${practiceOptions.quantity} practice problems with the following requirements:
+- Format each problem starting with "Q1.", "Q2.", etc.
+- Format each answer starting with "A1.", "A2.", etc.
+- Difficulty level: ${practiceOptions.difficulty}
+- Focus on weak areas: ${weaknesses.join(', ')}
+` : ''}
+
+${practiceOptions.includeMockExams ? '# Mock Exam' : ''}
+${practiceOptions.includeMockExams ? `
+Create a mock exam with the following requirements:
+- Format questions as "Q1.", "Q2.", etc.
+- Format answers as "A1.", "A2.", etc.
+- Difficulty level: ${practiceOptions.difficulty}
+- Include a mix of question types
+- Ensure 60% of questions focus on: ${weaknesses.join(', ')}
+` : ''}
+
+Topics to cover:
 ${topics}
 
 Student Profile:
 - Strengths: ${strengths.join(', ')}
-- Areas needing improvement: ${weaknesses.join(', ')}
-
-Instructions:
-- Focus more practice on the areas needing improvement
-- Include some questions leveraging the student's strengths
-- Adapt difficulty based on the student's profile
-
-Requirements:
-${practiceOptions.includePracticeProblems ? 
-`- Generate ${practiceOptions.quantity} practice problems
-- Difficulty level: ${practiceOptions.difficulty}
-- Each problem should have a clear solution
-- Format as Q1. [Question] followed by A1. [Answer]
-- Include more questions on weak areas: ${weaknesses.join(', ')}` : ''}
-
-${practiceOptions.includeMockExams ? 
-`- Generate a comprehensive mock exam
-- Difficulty level: ${practiceOptions.difficulty}
-- Include a mix of question types
-- Ensure 60% of questions focus on weak areas
-- Provide detailed solutions
-- Format with clear sections for questions and answers` : ''}`;
+- Areas needing improvement: ${weaknesses.join(', ')}`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

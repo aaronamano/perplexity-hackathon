@@ -91,9 +91,10 @@ export default function StudyGuideGenerator() {
 
       const studyGuideData = await studyGuideResponse.json();
 
-      // Combine the content
+      // Combine the content with proper spacing and headers
       const fullStudyGuide = `${studyGuideData.studyGuide}
-${practiceMaterialsContent ? '\n\n' + practiceMaterialsContent : ''}`;
+
+${practiceMaterialsContent}`;
 
       setStudyGuide(fullStudyGuide);
       setActiveTab('result');

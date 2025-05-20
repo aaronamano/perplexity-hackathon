@@ -17,12 +17,6 @@ export interface StudyGuideRequest {
     intensity: string;
     learningStyle: string;
   };
-  practiceOptions: {
-    includePracticeProblems: boolean;
-    includeMockExams: boolean;
-    difficulty: string;
-    quantity: number;
-  };
 }
 
 // Retrieve the Perplexity API key from environment variables

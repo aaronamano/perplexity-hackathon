@@ -53,42 +53,14 @@ ${Object.entries(body.mediaPreferences)
   .map(([key]) => `- ${key.charAt(0).toUpperCase() + key.slice(1)}`)
   .join('\n')}
 
-Practice Components:
-${body.practiceOptions.includePracticeProblems ? 
-  `- Include ${body.practiceOptions.quantity} practice problems at ${body.practiceOptions.difficulty} difficulty level` : ''}
-${body.practiceOptions.includeMockExams ? 
-  `- Include a mock exam with questions at ${body.practiceOptions.difficulty} difficulty level` : ''}
-
 Requirements for resources:
 - Include relevant hyperlinks using markdown format [text](url)
 - For each section, provide at least 2-3 high-quality external resources
 - Prioritize official documentation and reputable educational platforms
 - If suggesting videos, include direct links to specific tutorials
-- For practice problems, link to interactive coding platforms when applicable
 - Include links to relevant documentation, guides, and reference materials
 
-Format the response as a markdown document with the following sections:
-
-# Study Guide
-[Main guide content]
-
-# Practice Problems
-${body.practiceOptions.includePracticeProblems ? `
-Generate ${body.practiceOptions.quantity} practice problems at ${body.practiceOptions.difficulty} difficulty level.
-Format each problem as:
-Q1. [Problem text]
-A1. [Answer/Solution]
-` : ''}
-
-# Mock Exam
-${body.practiceOptions.includeMockExams ? `
-Generate a mock exam at ${body.practiceOptions.difficulty} difficulty level with:
-- Clear question numbering (Q1, Q2, etc.)
-- A mix of question types
-- Solutions provided separately
-` : ''}
-
-Each section should be clearly marked with the headers above.`;
+Format the response as a markdown document with clear sections and headers.`;
 
     // Send a POST request to the Perplexity API with the constructed prompt
     const response = await fetch('https://api.perplexity.ai/chat/completions', {

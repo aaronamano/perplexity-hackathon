@@ -255,36 +255,36 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
             <CardContent className="p-6">
               <div className="prose max-w-none">
                 <h2 className="text-xl font-semibold mb-4">Practice Problems</h2>
-                {studyGuide && studyGuide.includes("# Practice Problems") ? (
+                {studyGuide ? (
                   <div className="space-y-6">
                     {studyGuide
-                      .split("# Practice Problems")[1]
-                      .split("# Mock Exam")[0]
-                      .split("\n")
-                      .map((line, index) => {
-                        if (line.trim().startsWith("Q")) {
-                          const answer = studyGuide
-                            .split("# Practice Problems")[1]
-                            .split("# Mock Exam")[0]
-                            .split("\n")
-                            .find(l => l.startsWith("A" + line[1]));
+                      .split(/# Practice Problems|# Mock Exam/)
+                      .filter(section => section.includes("Q") && section.includes("A"))
+                      .map(section => 
+                        section.split("\n").map((line, index) => {
+                          if (line.trim().startsWith("Q")) {
+                            const questionNum = line.match(/Q(\d+)/)?.[1];
+                            const answer = section
+                              .split("\n")
+                              .find(l => l.trim().startsWith(`A${questionNum}`));
 
-                          return (
-                            <div key={index} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                              <p className="font-medium mb-2">{renderTextWithLinks(line)}</p>
-                              <details className="mt-2">
-                                <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                                  Show Solution
-                                </summary>
-                                <p className="mt-2 text-muted-foreground">
-                                  {answer && renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
-                                </p>
-                              </details>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
+                            return (
+                              <div key={index} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
+                                <p className="font-medium mb-2">{renderTextWithLinks(line)}</p>
+                                <details className="mt-2">
+                                  <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
+                                    Show Solution
+                                  </summary>
+                                  <p className="mt-2 text-muted-foreground">
+                                    {answer && renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
+                                  </p>
+                                </details>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })
+                      )}
                   </div>
                 ) : (
                   <p className="text-muted-foreground">No practice problems available in this study guide.</p>
@@ -313,7 +313,7 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                     </Button>
                   </div>
                 </div>
-                {studyGuide && studyGuide.includes("# Mock Exam") ? (
+                {studyGuide ? (
                   <>
                     <div className="mb-6">
                       <p className="font-medium text-purple-700">Instructions:</p>
@@ -325,10 +325,15 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                     </div>
                     <div className="space-y-6">
                       {studyGuide
-                        .split("# Mock Exam")[1]
-                        .split("\n")
+                        .split(/# Mock Exam/)[1]?.split("\n")
                         .map((line, index) => {
                           if (line.trim().startsWith("Q")) {
+                            const questionNum = line.match(/Q(\d+)/)?.[1];
+                            const answer = studyGuide
+                              .split(/# Mock Exam/)[1]
+                              .split("\n")
+                              .find(l => l.trim().startsWith(`A${questionNum}`));
+
                             return (
                               <div key={index} className="mb-8 p-4 bg-purple-50 rounded-lg border border-purple-100">
                                 <p className="font-medium mb-4">{renderTextWithLinks(line)}</p>
@@ -337,6 +342,14 @@ export default function StudyGuideDisplay({ studyGuide, isGenerating }: StudyGui
                                   className="mt-2"
                                   rows={4}
                                 />
+                                <details className="mt-4">
+                                  <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
+                                    Show Solution
+                                  </summary>
+                                  <p className="mt-2 p-3 bg-white rounded text-muted-foreground">
+                                    {answer && renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
+                                  </p>
+                                </details>
                               </div>
                             );
                           }

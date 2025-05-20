@@ -40,21 +40,40 @@ export default function StudyGuideGenerator() {
 
   // Handles the "Create Study Guide" button click
   const handleGenerateStudyGuide = async () => {
-    setIsGenerating(true) // Show loading spinner
+    setIsGenerating(true);
 
-    // Simulate API call to generate study guide
     try {
-      const response = await fetch('/api/study-guide', {
+      // First, get practice materials if needed
+      let practiceMaterialsContent = '';
+      if (practiceOptions.includePracticeProblems || practiceOptions.includeMockExams) {
+        const practiceMaterialsResponse = await fetch('/api/practice-materials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topics,
+            strengths: strengths.filter(s => s.trim()),
+            weaknesses: weaknesses.filter(w => w.trim()),
+            practiceOptions
+          }),
+        });
+
+        if (!practiceMaterialsResponse.ok) {
+          throw new Error('Failed to generate practice materials');
+        }
+
+        const practiceMaterialsData = await practiceMaterialsResponse.json();
+        practiceMaterialsContent = practiceMaterialsData.practiceMaterials;
+      }
+
+      // Then, get the study guide
+      const studyGuideResponse = await fetch('/api/study-guide', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topics,
           constraints,
-          strengths: strengths.filter(s => s.trim()), // Remove empty
-          weaknesses: weaknesses.filter(w => w.trim()), // Remove empty
-          // Get media preferences from checkboxes
+          strengths: strengths.filter(s => s.trim()),
+          weaknesses: weaknesses.filter(w => w.trim()),
           mediaPreferences: {
             videos: (document.getElementById('videos') as HTMLInputElement | null)?.checked || false,
             flashcards: (document.getElementById('flashcards') as HTMLInputElement | null)?.checked || false,
@@ -62,36 +81,29 @@ export default function StudyGuideGenerator() {
             readings: (document.getElementById('readings') as HTMLInputElement | null)?.checked || false,
             summaries: (document.getElementById('summaries') as HTMLInputElement | null)?.checked || false
           },
-          // Updated study plan options
-          studyPlan: {
-            intensity,
-            learningStyle,
-          },
-          // Updated practice options
-          practiceOptions: {
-            includePracticeProblems: practiceOptions.includePracticeProblems,
-            includeMockExams: practiceOptions.includeMockExams,
-            difficulty: practiceOptions.difficulty,
-            quantity: practiceOptions.quantity,
-          },
+          studyPlan: { intensity, learningStyle }
         }),
       });
 
-      if (!response.ok) {
+      if (!studyGuideResponse.ok) {
         throw new Error('Failed to generate study guide');
       }
 
-      const data = await response.json();
-      setStudyGuide(data.studyGuide); // Save generated guide
-      setActiveTab('result'); // Switch to result tab
+      const studyGuideData = await studyGuideResponse.json();
+
+      // Combine the content
+      const fullStudyGuide = `${studyGuideData.studyGuide}
+${practiceMaterialsContent ? '\n\n' + practiceMaterialsContent : ''}`;
+
+      setStudyGuide(fullStudyGuide);
+      setActiveTab('result');
     } catch (error) {
-      // Show error notification
-      console.error('Error generating study guide:', error);
+      console.error('Error:', error);
       toast.error('Failed to generate study guide', {
         description: 'Please try again later',
       });
     } finally {
-      setIsGenerating(false); // Hide loading spinner
+      setIsGenerating(false);
     }
   }
 

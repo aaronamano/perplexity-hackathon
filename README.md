@@ -33,7 +33,7 @@ StudySynth offers various preferences that users can select from to help create 
 <br>
 **Backend:** Next.js as a built-in backend. I created a file-based API route, integrating Perplexity Sonar API. 
 
-## Challenges we ran into
+## Challenges I ran into
 Although I was able to get the response back from Perplexity's API, the response time was slow. Also, another challenge I ran into was getting all of the information in the user query to be passed to the API and return an accurate, consistent response. Additionally, another challenge was being able to gather the appropriate sources (links) with respect to the user's query and making them interactable so that the user can easily click on it. 
 
 ## Accomplishments that I'm proud of

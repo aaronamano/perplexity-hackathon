@@ -17,6 +17,9 @@ import TopicTextarea from "./topic-textarea" // Input for topics/concepts
 import { toast } from "sonner" // For showing error notifications
 
 export default function StudyGuideGenerator() {
+  // Add new state variable for practice materials
+  const [practiceMaterials, setPracticeMaterials] = useState<string | null>(null);
+
   // Add new state variables
   const [intensity, setIntensity] = useState("balanced")
   const [learningStyle, setLearningStyle] = useState("visual")
@@ -44,7 +47,6 @@ export default function StudyGuideGenerator() {
 
     try {
       // First, get practice materials if needed
-      let practiceMaterialsContent = '';
       if (practiceOptions.includePracticeProblems || practiceOptions.includeMockExams) {
         const practiceMaterialsResponse = await fetch('/api/practice-materials', {
           method: 'POST',
@@ -62,7 +64,7 @@ export default function StudyGuideGenerator() {
         }
 
         const practiceMaterialsData = await practiceMaterialsResponse.json();
-        practiceMaterialsContent = practiceMaterialsData.practiceMaterials;
+        setPracticeMaterials(practiceMaterialsData.practiceMaterials);
       }
 
       // Then, get the study guide
@@ -90,13 +92,7 @@ export default function StudyGuideGenerator() {
       }
 
       const studyGuideData = await studyGuideResponse.json();
-
-      // Combine the content with proper spacing and headers
-      const fullStudyGuide = `${studyGuideData.studyGuide}
-
-${practiceMaterialsContent}`;
-
-      setStudyGuide(fullStudyGuide);
+      setStudyGuide(studyGuideData.studyGuide);
       setActiveTab('result');
     } catch (error) {
       console.error('Error:', error);
@@ -242,7 +238,11 @@ ${practiceMaterialsContent}`;
 
         {/* Study guide result display */}
         <TabsContent value="result" className="mt-6">
-          <StudyGuideDisplay studyGuide={studyGuide} isGenerating={isGenerating} />
+          <StudyGuideDisplay 
+            studyGuide={studyGuide} 
+            practiceMaterials={practiceMaterials}
+            isGenerating={isGenerating} 
+          />
         </TabsContent>
       </Tabs>
     </div>

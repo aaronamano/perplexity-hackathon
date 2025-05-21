@@ -53,7 +53,7 @@ Student Profile:
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4",
         messages: [
           {
             role: "system",
@@ -72,7 +72,11 @@ Student Profile:
     }
 
     const data = await response.json();
-    const practiceMaterials = data.choices[0].message.content;
+    const practiceMaterials = data.choices[0]?.message?.content;
+
+    if (!practiceMaterials) {
+      throw new Error('No content received from OpenAI');
+    }
 
     return NextResponse.json({ practiceMaterials }, { status: 200 });
   } catch (error) {

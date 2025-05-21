@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -15,22 +15,62 @@ interface StudyGuideDisplayProps {
   isGenerating: boolean
 }
 
-// Update the extractSection helper function to handle both sources
+// Update the extractSection helper function to be more robust
 const extractSection = (content: string | null, sectionName: string) => {
   if (!content) return '';
   
-  const sections = content.split(/^# /m);
-  const section = sections.find(s => s.startsWith(sectionName));
+  // First try to find content between section headers
+  const sections = content.split(/# /m);
+  const sectionContent = sections.find(s => s.startsWith(sectionName));
   
-  if (!section) return '';
+  if (sectionContent) {
+    // Remove the section name and trim
+    return sectionContent.replace(sectionName, '').trim();
+  }
 
-  return section.replace(sectionName, '').trim();
+  // If no sections found, try to extract Q&A pairs directly
+  const lines = content.split('\n');
+  const relevantLines = lines.filter(line => {
+    const trimmedLine = line.trim();
+    return trimmedLine.startsWith('Q') || trimmedLine.startsWith('A');
+  });
+
+  return relevantLines.join('\n');
+};
+
+const parseQAPairs = (content: string) => {
+  if (!content) return [];
+  
+  const lines = content.split('\n');
+  return lines.reduce((acc: { question: string; answer: string }[], line, index, array) => {
+    const trimmedLine = line.trim();
+    if (trimmedLine.startsWith('Q')) {
+      const questionNum = trimmedLine.match(/Q(\d+)/)?.[1];
+      const answer = array.find(l => l.trim().startsWith(`A${questionNum}`));
+      if (answer) {
+        acc.push({
+          question: trimmedLine,
+          answer: answer.trim()
+        });
+      }
+    }
+    return acc;
+  }, []);
 };
 
 // Main component for displaying the study guide
 export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGenerating }: StudyGuideDisplayProps) {
   // State to track which tab/view is active
   const [activeView, setActiveView] = useState("full")
+
+  // Add console logging to debug the content
+  useEffect(() => {
+    if (practiceMaterials) {
+      console.log('Practice Materials:', practiceMaterials);
+      console.log('Practice Problems:', extractSection(practiceMaterials, 'Practice Problems'));
+      console.log('Mock Exam:', extractSection(practiceMaterials, 'Mock Exam'));
+    }
+  }, [practiceMaterials]);
 
   // Copies the study guide text to the clipboard and shows a toast notification
   const handleCopy = () => {
@@ -270,32 +310,19 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
                 <h2 className="text-xl font-semibold mb-4">Practice Problems</h2>
                 {practiceMaterials ? (
                   <div className="space-y-6">
-                    {extractSection(practiceMaterials, 'Practice Problems')
-                      .split('\n')
-                      .filter(line => line.trim() && (line.trim().startsWith('Q') || line.trim().startsWith('A')))
-                      .reduce((acc, line, index, array) => {
-                        if (line.trim().startsWith('Q')) {
-                          const questionNum = line.match(/Q(\d+)/)?.[1];
-                          const answer = array.find(l => l.trim().startsWith(`A${questionNum}`));
-                          if (answer) {
-                            acc.push({ question: line, answer });
-                          }
-                        }
-                        return acc;
-                      }, [] as { question: string; answer: string }[])
-                      .map(({ question, answer }, index) => (
-                        <div key={index} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                          <p className="font-medium mb-2">{renderTextWithLinks(question)}</p>
-                          <details className="mt-2">
-                            <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                              Show Solution
-                            </summary>
-                            <p className="mt-2 text-muted-foreground">
-                              {answer && renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
-                            </p>
-                          </details>
-                        </div>
-                      ))}
+                    {parseQAPairs(extractSection(practiceMaterials, 'Practice Problems')).map(({ question, answer }, index) => (
+                      <div key={index} className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-100">
+                        <p className="font-medium mb-2">{renderTextWithLinks(question)}</p>
+                        <details className="mt-2">
+                          <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
+                            Show Solution
+                          </summary>
+                          <p className="mt-2 text-muted-foreground">
+                            {renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
+                          </p>
+                        </details>
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <p className="text-muted-foreground">No practice problems available.</p>
@@ -335,37 +362,24 @@ export default function StudyGuideDisplay({ studyGuide, practiceMaterials, isGen
                       </ul>
                     </div>
                     <div className="space-y-6">
-                      {extractSection(practiceMaterials, 'Mock Exam')
-                        .split('\n')
-                        .filter(line => line.trim() && (line.trim().startsWith('Q') || line.trim().startsWith('A')))
-                        .reduce((acc, line, index, array) => {
-                          if (line.trim().startsWith('Q')) {
-                            const questionNum = line.match(/Q(\d+)/)?.[1];
-                            const answer = array.find(l => l.trim().startsWith(`A${questionNum}`));
-                            if (answer) {
-                              acc.push({ question: line, answer });
-                            }
-                          }
-                          return acc;
-                        }, [] as { question: string; answer: string }[])
-                        .map(({ question, answer }, index) => (
-                          <div key={index} className="mb-8 p-4 bg-purple-50 rounded-lg border border-purple-100">
-                            <p className="font-medium mb-4">{renderTextWithLinks(question)}</p>
-                            <Textarea
-                              placeholder="Enter your answer here..."
-                              className="mt-2"
-                              rows={4}
-                            />
-                            <details className="mt-4">
-                              <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
-                                Show Solution
-                              </summary>
-                              <p className="mt-2 p-3 bg-white rounded text-muted-foreground">
-                                {answer && renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
-                              </p>
-                            </details>
-                          </div>
-                        ))}
+                      {parseQAPairs(extractSection(practiceMaterials, 'Mock Exam')).map(({ question, answer }, index) => (
+                        <div key={index} className="mb-8 p-4 bg-purple-50 rounded-lg border border-purple-100">
+                          <p className="font-medium mb-4">{renderTextWithLinks(question)}</p>
+                          <Textarea
+                            placeholder="Enter your answer here..."
+                            className="mt-2"
+                            rows={4}
+                          />
+                          <details className="mt-4">
+                            <summary className="text-sm text-purple-600 cursor-pointer hover:text-purple-800">
+                              Show Solution
+                            </summary>
+                            <p className="mt-2 p-3 bg-white rounded text-muted-foreground">
+                              {renderTextWithLinks(answer.substring(answer.indexOf(".") + 1).trim())}
+                            </p>
+                          </details>
+                        </div>
+                      ))}
                     </div>
                   </>
                 ) : (

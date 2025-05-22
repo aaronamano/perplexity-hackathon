@@ -53,7 +53,7 @@ I learned how to use Next.js and Shadcn while integrating multiple LLM APIs into
 ## What's next for StudySynth
 
 👨‍👩‍👧‍👦 Users can have their own accounts <br>
-📚 Users can create multiple study guides and have them historically saved in their account <br>
+📚 Users can create multiple study guides to have them historically saved in their account <br>
 📤 Ability to share personalized study guides to other students and peers <br>
-🛠 Improving StudySynth and make it a startup (maybe, just maybe) <br>
-🏫 Pitch this to schools and institutions of all grades <br>
+🛠 Develop and integrate more features in StudySynth <br>
+🏫 Make StudySynth a startup (maybe, just maybe) and pitch it for schools and institutions of all grades <br>

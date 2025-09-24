@@ -5,8 +5,7 @@ make sure to `git clone <URL>` this repository first then follow the steps below
 1. create a `.env.local` file under `studysynth\`
 2. in the `.env.local` file add `PERPLEXITY_API_KEY=<your api key>` and `OPENAI_API_KEY=<your_api_key>`
 3. run `npm install` under `studysynth\`
-4. if needed, run `npx shadcn@<desired-version> init` or `npx shadcn@latest init` under `studysynth\` <a href="https://ui.shadcn.com/docs/installation/next">refer to documentation</a>
-5. run `npm run dev` under `studysynth\` and click on `http://localhost:3000/`
+4. run `npm run dev` under `studysynth\` and click on `http://localhost:3000/`
 
 ## Problem
 Many students struggle with finding ways to study and having difficulty seeking resources they need in order to succeed. As a result, majority of students feel overwhelmed. There are two extremes, one or the other, that people face when it comes to studying:
